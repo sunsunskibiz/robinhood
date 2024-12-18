@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"log"
+	"golang.org/x/time/rate"
 )
 
 func JWTMiddleware() gin.HandlerFunc {
@@ -49,4 +51,15 @@ func ExtractToken(c *gin.Context) (string, error) {
 	}
 
 	return parts[1], nil
+}
+
+func RateLimitMiddleware(limiter *rate.Limiter) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !limiter.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many requests"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }

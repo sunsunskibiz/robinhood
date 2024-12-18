@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sunsunskibiz/robinhood/config"
 	"github.com/sunsunskibiz/robinhood/handlers"
+	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -13,6 +14,9 @@ func main() {
 	config.Config.DB = db
 
 	r := gin.Default()
+
+	limiter := rate.NewLimiter(10, 1)
+	r.Use(handlers.RateLimitMiddleware(limiter))
 
 	r.POST("/login", handlers.LoginHandler())
 
@@ -28,7 +32,6 @@ func main() {
 
 	log.Println("Start robinhood server!")
 
-	// TODO: Add rate limit
 	if err := r.Run(":8080"); err != nil {
 		panic("Failed to start the server")
 	}
