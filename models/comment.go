@@ -8,5 +8,6 @@ type Comment struct {
 	Content   string `gorm:"type:text;not null" json:"content"`
 	CreatedBy uint   `gorm:"not null" json:"created_by"`
 	CreatedAt *time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedBy uint      `gorm:"not null" json:"updated_by"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }

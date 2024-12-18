@@ -20,6 +20,8 @@ func main() {
 	authRoutes.POST("/threads", handlers.CreateThreadHandler)
 	authRoutes.GET("/threads", handlers.GetThreadListHandler)
 	authRoutes.GET("/threads/:id", handlers.GetThreadDetailHandler)
+	authRoutes.PUT("/threads/:id", handlers.EditThreadHandler)
+	authRoutes.DELETE("/threads/:id", handlers.DeleteThreadHandler)
 	authRoutes.POST("/comments", handlers.CreateCommentHandler)
 	authRoutes.PUT("/comments/:id", handlers.EditCommentHandler)
 	authRoutes.DELETE("/comments/:id", handlers.DeleteCommentHandler)

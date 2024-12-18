@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sunsunskibiz/robinhood/config"
@@ -33,10 +34,13 @@ func CreateCommentHandler(c *gin.Context) {
 	}
 
 	userID := c.MustGet("userID").(int)
+	now := time.Now()
 	comment := models.Comment{
 		ThreadID:  input.ThreadID,
 		Content:   input.Content,
 		CreatedBy: uint(userID),
+		UpdatedBy: uint(userID),
+		UpdatedAt: &now,
 	}
 	if err := config.Config.DB.Create(&comment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create comment"})
@@ -79,6 +83,9 @@ func EditCommentHandler(c *gin.Context) {
 	}
 
 	comment.Content = input.Content
+	comment.UpdatedBy = uint(userID)
+	now := time.Now()
+	comment.UpdatedAt = &now
 	if err := config.Config.DB.Save(&comment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update comment"})
 		return
