@@ -19,6 +19,7 @@ func main() {
 	authRoutes := r.Group("/api", handlers.JWTMiddleware())
 	authRoutes.POST("/threads", handlers.CreateThreadHandler)
 	authRoutes.GET("/threads", handlers.GetThreadListHandler)
+	authRoutes.GET("/threads/:id", handlers.GetThreadDetailHandler)
 
 	log.Println("Start robinhood server!")
 
