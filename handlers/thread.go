@@ -10,13 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type CreateThreadInput struct {
+type createThreadInput struct {
 	Name   string `json:"name" binding:"required"`
 	Detail string `json:"detail" binding:"required"`
 }
 
 func CreateThreadHandler(c *gin.Context) {
-	var input CreateThreadInput
+	var input createThreadInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

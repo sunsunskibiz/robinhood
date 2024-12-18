@@ -20,7 +20,6 @@ CREATE TABLE threads (
     status VARCHAR(50) NOT NULL DEFAULT 'todo',
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INT NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_updated_at ON threads (updated_at);
@@ -33,7 +32,6 @@ CREATE TABLE thread_histories (
     status VARCHAR(50) NOT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INT NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_thread_id ON thread_histories (thread_id);
@@ -41,11 +39,9 @@ CREATE INDEX idx_thread_id ON thread_histories (thread_id);
 CREATE TABLE comments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     thread_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INT NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_thread_id ON comments (thread_id);

@@ -20,6 +20,9 @@ func main() {
 	authRoutes.POST("/threads", handlers.CreateThreadHandler)
 	authRoutes.GET("/threads", handlers.GetThreadListHandler)
 	authRoutes.GET("/threads/:id", handlers.GetThreadDetailHandler)
+	authRoutes.POST("/comments", handlers.CreateCommentHandler)
+	authRoutes.PUT("/comments/:id", handlers.EditCommentHandler)
+	authRoutes.DELETE("/comments/:id", handlers.DeleteCommentHandler)
 
 	log.Println("Start robinhood server!")
 
