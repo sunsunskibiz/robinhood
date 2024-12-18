@@ -1,18 +1,19 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/sunsunskibiz/robinhood/config"
+	"github.com/sunsunskibiz/robinhood/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("your-secret-key") // TODO: Change to other key
 
-func LoginHandler(db *sql.DB) gin.HandlerFunc {
+func LoginHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		type LoginInput struct {
 			Email    string `json:"email" binding:"required"`
@@ -20,28 +21,26 @@ func LoginHandler(db *sql.DB) gin.HandlerFunc {
 		}
 
 		var input LoginInput
-		var hashedPassword string
-		var userID int
 
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		query := "SELECT id, password FROM users WHERE email = ?"
-		err := db.QueryRow(query, input.Email).Scan(&userID, &hashedPassword)
+		var user models.User
+		err := config.Config.DB.Where("email = ?", input.Email).First(&user).Error
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
 
-		if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(input.Password)); err != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"userID": userID,
+			"userID": user.ID,
 			"exp":    time.Now().Add(time.Hour * 72).Unix(),
 		})
 

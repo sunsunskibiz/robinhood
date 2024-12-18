@@ -6,27 +6,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sunsunskibiz/robinhood/config"
 	"github.com/sunsunskibiz/robinhood/handlers"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
 	db := config.InitDB()
-	defer db.Close()
+	config.Config.DB = db
 
 	r := gin.Default()
 
-	r.POST("/login", handlers.LoginHandler(db))
+	r.POST("/login", handlers.LoginHandler())
 
 	authRoutes := r.Group("/api", handlers.JWTMiddleware())
-	authRoutes.GET("/user", handlers.UserHandler(db))
+	authRoutes.POST("/threads", handlers.CreateThreadHandler)
+	authRoutes.GET("/threads", handlers.GetThreadListHandler)
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	if err != nil {
-		log.Fatalf("Failed to connect to database after retries: %v", err)
-	}
-
-	log.Println("Hash Password: ", string(hashedPassword))
 	log.Println("Start robinhood server!")
 
-	r.Run(":8080")
+	// TODO: Add rate limit
+	if err := r.Run(":8080"); err != nil {
+		panic("Failed to start the server")
+	}
 }
