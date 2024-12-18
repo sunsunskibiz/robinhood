@@ -79,7 +79,7 @@ func GetThreadListHandler(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	var threads []models.Thread
-	if err := config.Config.DB.Limit(limit).Offset(offset).Order("created_at DESC").Find(&threads).Error; err != nil {
+	if err := config.Config.DB.Limit(limit).Offset(offset).Order("created_at DESC").Where("status <> ?", "achieved").Find(&threads).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch threads"})
 		return
 	}
@@ -143,37 +143,6 @@ func EditThreadHandler(c *gin.Context) {
 		return
 	}
 
-	thread.Name = input.Name
-	thread.Detail = input.Detail
-	thread.Status = input.Status
-	userID := c.MustGet("userID").(int)
-	thread.UpdatedBy = uint(userID)
-	now := time.Now()
-	thread.UpdatedAt = &now
-	if err := config.Config.DB.Save(&thread).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update thread"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Thread updated successfully",
-		"thread":  thread,
-	})
-}
-
-func DeleteThreadHandler(c *gin.Context) {
-	threadID := c.Param("id")
-
-	var thread models.Thread
-	if err := config.Config.DB.First(&thread, threadID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Thread not found"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch thread"})
-		}
-		return
-	}
-
 	tx := config.Config.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -182,7 +151,9 @@ func DeleteThreadHandler(c *gin.Context) {
 		}
 	}()
 
-	thread.Status = "achieved"
+	thread.Name = input.Name
+	thread.Detail = input.Detail
+	thread.Status = input.Status
 	userID := c.MustGet("userID").(int)
 	thread.UpdatedBy = uint(userID)
 	now := time.Now()
@@ -206,6 +177,35 @@ func DeleteThreadHandler(c *gin.Context) {
 
 	if err := tx.Commit().Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Thread updated successfully",
+		"thread":  thread,
+	})
+}
+
+func DeleteThreadHandler(c *gin.Context) {
+	threadID := c.Param("id")
+
+	var thread models.Thread
+	if err := config.Config.DB.First(&thread, threadID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Thread not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch thread"})
+		}
+		return
+	}
+
+	thread.Status = "achieved"
+	userID := c.MustGet("userID").(int)
+	thread.UpdatedBy = uint(userID)
+	now := time.Now()
+	thread.UpdatedAt = &now
+	if err := config.Config.DB.Save(&thread).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update thread"})
 		return
 	}
 
